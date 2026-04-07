@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="pageTitle">Retro Movie Hub</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='image/logo.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="Header_first_block">
+            <img src="{{ url_for('static', filename='image/logo.png') }}" alt="Logo của Retro Movie Hub" data-i18n-alt="headerLogoAlt">
+        </div>
+
+        <div class="Header_second_block">
+            <i class="fa-solid fa-magnifying-glass"></i> <input type="text" id="movie" data-i18n-placeholder="searchPlaceholder" placeholder="Nhập tên phim...">
+        </div>
+
+        <div class="Header_third_block">
+            <ul>
+                <li><a href="https://phimhay.co.in/danh-sach/phim-chieu-rap/" data-i18n="movieTheater">Phim Chiếu Rạp</a></li>
+                <li><a href="https://phimhay.co.in/danh-sach/phim-bo/" data-i18n="series">Phim Bộ</a></li>
+                <li><a href="https://phimhay.co.in/danh-sach/phim-le/" data-i18n="movieSingle">Phim Lẻ</a></li>
+                <li><span data-i18n="genre">Thể Loại</span> <i class="fa-solid fa-angle-down"></i></li>
+                <li><span data-i18n="country">Quốc Gia</span> <i class="fa-solid fa-angle-down"></i></li>
+                <li data-i18n="login">Đăng nhập</li>
+                <li><div class="language-selector">
+                    <div class="current-lang" id="display-lang">Đang tải...</div>
+                    <ul class="lang-dropdown">
+                        <li onclick="setLanguage('en')">English</li>
+                        <li onclick="setLanguage('ko')">Tiếng Hàn</li>
+                        <li onclick="setLanguage('ja')">Tiếng Nhật</li>
+                        <li onclick="setLanguage('zh')">Tiếng Trung</li>
+                        <li onclick="setLanguage('vi')">Tiếng Việt</li>
+                    </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="result-section">
+        <p id="genres"></p>
+
+        <div id="result" class="movie-container"></div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <div id="google_translate_element" style="display:none;"></div>
+    
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'vi',
+                includedLanguages: 'en,ko,ja,zh-CN,vi',
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL, // Thử đổi sang HORIZONTAL
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
