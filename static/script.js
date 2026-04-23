@@ -299,41 +299,82 @@ window.onload = function() {
     }
 };
 
-async function loadTop10Movies() {
-    try {
-        const response = await fetch('/api/top-10-latest');
-        const movies = await response.json();
-        const movieDivs = document.querySelectorAll('.top-10-movies > div:not(:first-child)');
-
-        movies.forEach((movie, index) => {
-            if (index < movieDivs.length) {
-                const div = movieDivs[index];
-
-                div.innerHTML = `
-                    <div class="movie-item">
-                        <img src="${movie.poster}" alt="${movie.title}" title="${movie.title}">
-                        <h3>${movie.title}</h3>
-                        <p>${movie.year}</p>
-                    </div>
-                `;
-
-                div.style.cursor = 'pointer';
-                div.addEventListener('click', () => {
-                    document.getElementById('movie').value = movie.title;
-                    document.getElementById('movie').dispatchEvent(new Event('input'));
-                });
-            }
-        });
-    } catch (error) {
-        console.error('Lỗi khi tải top 10 phim:', error);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', loadTop10Movies);
-
 function setLanguage(langCode) {
     let normalizedLang = translations[langCode] ? langCode : 'vi';
     document.documentElement.lang = normalizedLang;
     translatePage(normalizedLang);
     localStorage.setItem('preferredLang', normalizedLang);
 }
+
+/*----------------------------TOP-10-MOVIES--------------------------------------- */
+let movies = [];
+let loaded = false;
+
+// ===== CREATE CARD =====
+function createMovieCard(movie) {
+    const div = document.createElement("div");
+    div.className = "movie-card";
+
+    div.innerHTML = `
+        <div class="movie-img"></div>
+        <div class="movie-info">
+            <div class="movie-title">${movie.title}</div>
+            <button class="watch-btn">XEM PHIM</button>
+        </div>
+    `;
+
+    // trigger animation
+    setTimeout(() => {
+        div.classList.add("slide-in");
+    }, 50);
+
+    return div;
+}
+
+// ===== RENDER =====
+function renderFirst5() {
+    const container = document.getElementById("movieContainer");
+
+    for (let i = 0; i < 5 && i < movies.length; i++) {
+        container.appendChild(createMovieCard(movies[i]));
+    }
+}
+
+function renderNext5() {
+    if (loaded) return;
+
+    const container = document.getElementById("movieContainer");
+
+    for (let i = 5; i < 10 && i < movies.length; i++) {
+        container.appendChild(createMovieCard(movies[i]));
+    }
+
+    loaded = true;
+}
+
+// ===== INIT =====
+document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("movieContainer");
+
+    // scroll ngang bằng chuột
+    container.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        container.scrollLeft += e.deltaY;
+
+        // 👇 khi scroll gần cuối → load thêm 5 phim
+        if (
+            container.scrollLeft + container.clientWidth >=
+            container.scrollWidth - 50
+        ) {
+            renderNext5();
+        }
+    });
+
+    // fetch data
+    fetch("/api/latest")
+        .then(res => res.json())
+        .then(data => {
+            movies = data;
+            renderFirst5();
+        });
+});

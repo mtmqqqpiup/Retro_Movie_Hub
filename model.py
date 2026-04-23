@@ -9,7 +9,7 @@ genre_movie = "C:/Users/quanm/project01/ml-100k/ml-100k/u.genre"
 
 genre_df = pd.read_csv(genre_movie, sep="|", header=None)
 genre_df = genre_df.dropna()  # bỏ dòng rỗng cuối
-genre_map = dict(zip(genre_df[1], genre_df[0]))  # {index: genre_name}
+genre_map = dict(zip(genre_df[1], genre_df[0]))
 
 columns = ["movieId", "title", "release_date", "video_release_date", "IMDb_URL"] + list(genre_map.values())
 
@@ -74,7 +74,6 @@ def fetch_poster_from_tmdb(title, movie_id):
         # on any failure, return None and let caller fallback
         return None
 
-
 def get_top_10_latest_movies():
     import datetime
     
@@ -117,7 +116,6 @@ def get_top_10_latest_movies():
         })
     
     return result
-
 
 def recommend(movie_name, top_n=5):
     movie_name = movie_name.strip().lower()
@@ -177,3 +175,11 @@ def recommend(movie_name, top_n=5):
         "searched": searched,
         "recommendations": recommendations
     }
+
+df = pd.read_csv(movie_data, sep="|", names=columns, encoding="latin-1")
+df["year"] = df["title"].str.extract(r"\((\d{4})\)").astype(float)
+
+
+def get_latest_movies(n=10):
+    latest = df.sort_values("year", ascending=False).head(n)
+    return latest[["movieId", "title", "year"]].to_dict(orient="records")
