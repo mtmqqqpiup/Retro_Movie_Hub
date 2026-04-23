@@ -108,7 +108,6 @@ header {
     overflow: hidden;
 }
 
-/* Phong cách cho phim được tìm kiếm (nổi bật, hiển thị phía trên các gợi ý) */
 .movie-card.target {
     border: 2px solid #ffd700;
     box-shadow: 0 16px 40px rgba(255, 215, 0, 0.18), 0 4px 12px rgba(184, 134, 11, 0.12) inset;
@@ -211,14 +210,13 @@ header {
     transition: color 0.3s ease;
     position: relative;
 }
-.Header_third_block>ul>li>a:hover {
-    color: #f4e4bc;
-}
+
 .Header_third_block>ul>li>a:visited{
     color: inherit;
 }
 
-.language-selector {
+.language-selector,
+.Category {
     position: relative;
     display: inline-block;
     padding: 10px 20px;
@@ -228,7 +226,8 @@ header {
     transition: all 0.3s ease;
 }
 
-.language-selector:hover {
+.language-selector:hover,
+.Category:hover {
     background-color: rgba(201, 169, 97, 0.1);
     border-radius: 6px;
 }
@@ -238,7 +237,8 @@ header {
     color: #b8860b;
 }
 
-.lang-dropdown {
+.lang-dropdown,
+.Category-dropdown {
     position: absolute;
     top: 100%;
     right: 0;
@@ -255,31 +255,32 @@ header {
     visibility: hidden;
 }
 
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.lang-dropdown li {
+.lang-dropdown li,
+.Category-dropdown li {
     padding: 12px 20px;
     cursor: pointer;
     color: #daa520;
     transition: all 0.2s ease;
 }
 
-.lang-dropdown li:hover {
+.lang-dropdown li:hover,
+.Category-dropdown li:hover {
     background-color: rgba(184, 134, 11, 0.15);
     color: #f4e4bc;
     padding-left: 25px;
 }
 
+.Category-dropdown li a{
+    text-decoration: none;
+    color: inherit;
+}
+
+/*------------------------------------END-HEADER---------------------------------------*/
+
+/*------------------------------------TOP-10-MOVIES---------------------------------------*/
+
+/*------------------------------------END-TOP-10-MOVIES---------------------------------------*/
+/*------------------------------------SEARCH-RESULT---------------------------------------*/
 .btn {
     background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
     color: #0a0e27;
@@ -355,11 +356,6 @@ body {
 
 .skiptranslate {
     display: none !important;
-}
-
-.Category>ul {
-    display: none !important;
-    visibility: hidden !important;
 }
 
 /*----------------------------------RESPONSIVE----------------------------------*/

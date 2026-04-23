@@ -7,11 +7,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 movie_data = "C:/Users/quanm/project01/ml-100k/ml-100k/u.item"
 genre_movie = "C:/Users/quanm/project01/ml-100k/ml-100k/u.genre"
 
-
 genre_df = pd.read_csv(genre_movie, sep="|", header=None)
 genre_df = genre_df.dropna()  # bỏ dòng rỗng cuối
 genre_map = dict(zip(genre_df[1], genre_df[0]))  # {index: genre_name}
-
 
 columns = ["movieId", "title", "release_date", "video_release_date", "IMDb_URL"] + list(genre_map.values())
 
@@ -30,26 +28,18 @@ movies['genres'] = movies[genre_cols].apply(
     axis=1
 )
 
-
 cv = CountVectorizer()
 matrix = cv.fit_transform(movies['genres'])
 
-
 similarity = cosine_similarity(matrix)
 
-
 def fetch_poster_from_tmdb(title, movie_id):
-    """Try to download poster from TMDb and save to static/image/posters/<movie_id>.jpg.
-    Return local static URL on success, or None on failure.
-    Requires TMDB_API_KEY environment variable.
-    """
     api_key = os.getenv('TMDB_API_KEY')
     poster_dir = os.path.join(os.path.dirname(__file__), 'static', 'image', 'posters')
     os.makedirs(poster_dir, exist_ok=True)
     poster_filename = f"{movie_id}.jpg"
     poster_path = os.path.join(poster_dir, poster_filename)
 
-    # If already exists, return local URL
     if os.path.exists(poster_path):
         return f"/static/image/posters/{poster_filename}"
 
@@ -83,6 +73,50 @@ def fetch_poster_from_tmdb(title, movie_id):
     except Exception:
         # on any failure, return None and let caller fallback
         return None
+
+
+def get_top_10_latest_movies():
+    import datetime
+    
+    def extract_year(date_str):
+        try:
+            if pd.isna(date_str) or date_str == '':
+                return 0
+            date_obj = datetime.datetime.strptime(date_str, "%d-%b-%Y")
+            return date_obj.year
+        except:
+            return 0
+    
+    movies['year'] = movies['release_date'].apply(extract_year)
+    
+    top_10 = movies[movies['year'] > 0].sort_values(by='year', ascending=False).head(10)
+    
+    def _poster_url_for_movie(row):
+        movie_id = row['movieId']
+        poster_dir = os.path.join(os.path.dirname(__file__), 'static', 'image', 'posters')
+        # check common extensions in order
+        for ext in ('jpg', 'png', 'svg'):
+            poster_filename = f"{movie_id}.{ext}"
+            poster_path = os.path.join(poster_dir, poster_filename)
+            if os.path.exists(poster_path):
+                return f"/static/image/posters/{poster_filename}"
+
+        tmdb_url = fetch_poster_from_tmdb(row['title'], movie_id)
+        if tmdb_url:
+            return tmdb_url
+
+        return '/static/image/logo.png'
+    
+    result = []
+    for _, row in top_10.iterrows():
+        result.append({
+            'movieId': int(row['movieId']),
+            'title': row['title'],
+            'year': int(row['year']),
+            'poster': _poster_url_for_movie(row)
+        })
+    
+    return result
 
 
 def recommend(movie_name, top_n=5):

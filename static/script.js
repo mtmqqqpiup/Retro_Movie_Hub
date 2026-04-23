@@ -132,7 +132,6 @@ function translatePage(langCode) {
         display.innerText = strings.currentLang;
     }
 
-    // Dịch các mục trong dropdown ngôn ngữ
     document.querySelectorAll('.lang-dropdown li').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (key && key in strings) {
@@ -235,9 +234,10 @@ window.onload = function() {
     let initialLang = savedLang || document.documentElement.lang || 'vi';
     setLanguage(initialLang);
 
-    // Thêm delay cho dropdown ngôn ngữ
     const languageSelector = document.querySelector('.language-selector');
     const langDropdown = document.querySelector('.lang-dropdown');
+    const category = document.querySelector('.Category');
+    const categoryDropdown = document.querySelector('.Category-dropdown');
     let hideTimeout;
 
     if (languageSelector && langDropdown) {
@@ -253,7 +253,7 @@ window.onload = function() {
                 langDropdown.style.opacity = '0';
                 langDropdown.style.visibility = 'hidden';
                 langDropdown.style.animation = '';
-            }, 200); // 1 giây delay
+            }, 100);
         });
 
         langDropdown.addEventListener('mouseenter', function() {
@@ -265,10 +265,71 @@ window.onload = function() {
                 langDropdown.style.opacity = '0';
                 langDropdown.style.visibility = 'hidden';
                 langDropdown.style.animation = '';
-            }, 100); // 1 giây delay
+            }, 100);
+        });
+    }
+
+    if (category && categoryDropdown) {
+        category.addEventListener('mouseenter', function() {
+            clearTimeout(hideTimeout);
+            categoryDropdown.style.opacity = '1';
+            categoryDropdown.style.visibility = 'visible';
+            categoryDropdown.style.animation = 'slideDown 0.3s ease';
+        });
+
+        category.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                categoryDropdown.style.opacity = '0';
+                categoryDropdown.style.visibility = 'hidden';
+                categoryDropdown.style.animation = '';
+            }, 100);
+        });
+
+        categoryDropdown.addEventListener('mouseenter', function() {
+            clearTimeout(hideTimeout);
+        });
+
+        categoryDropdown.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                categoryDropdown.style.opacity = '0';
+                categoryDropdown.style.visibility = 'hidden';
+                categoryDropdown.style.animation = '';
+            }, 100);
         });
     }
 };
+
+async function loadTop10Movies() {
+    try {
+        const response = await fetch('/api/top-10-latest');
+        const movies = await response.json();
+        const movieDivs = document.querySelectorAll('.top-10-movies > div:not(:first-child)');
+
+        movies.forEach((movie, index) => {
+            if (index < movieDivs.length) {
+                const div = movieDivs[index];
+
+                div.innerHTML = `
+                    <div class="movie-item">
+                        <img src="${movie.poster}" alt="${movie.title}" title="${movie.title}">
+                        <h3>${movie.title}</h3>
+                        <p>${movie.year}</p>
+                    </div>
+                `;
+
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', () => {
+                    document.getElementById('movie').value = movie.title;
+                    document.getElementById('movie').dispatchEvent(new Event('input'));
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Lỗi khi tải top 10 phim:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadTop10Movies);
 
 function setLanguage(langCode) {
     let normalizedLang = translations[langCode] ? langCode : 'vi';
