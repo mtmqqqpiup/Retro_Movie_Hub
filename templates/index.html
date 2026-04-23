@@ -23,17 +23,26 @@
                 <li><a href="https://phimhay.co.in/danh-sach/phim-chieu-rap/" data-i18n="movieTheater">Phim Chiếu Rạp</a></li>
                 <li><a href="https://phimhay.co.in/danh-sach/phim-bo/" data-i18n="series">Phim Bộ</a></li>
                 <li><a href="https://phimhay.co.in/danh-sach/phim-le/" data-i18n="movieSingle">Phim Lẻ</a></li>
-                <li><span data-i18n="genre">Thể Loại</span> <i class="fa-solid fa-angle-down"></i></li>
+                <li><div class="Category"><span data-i18n="genre">Thể Loại</span> <i class="fa-solid fa-angle-down"></i>
+                    <ul>
+                        <li><a href="https://phimhay.co.in/danh-sach/phim-hanh-dong/" data-i18n="genreAction">Hành Động</a></li>
+                        <li><a href="https://phimhay.co.in/danh-sach/phim-kinh-di/" data-i18n="genreHorror">Kinh Dị</a></li>
+                        <li><a href="https://phimhay.co.in/danh-sach/phim-tinh-cam/" data-i18n="genreRomance">Tình Cảm</a></li>
+                        <li><a href="https://phimhay.co.in/danh-sach/phim-vien-tuong/" data-i18n="genreSciFi">Viễn Tưởng</a></li>
+                        <li><a href="https://phimhay.co.in/danh-sach/phim-hoat-hinh/" data-i18n="genreAnimation">Hoạt Hình</a></li>
+                    </ul>
+                    </div>
+                </li>
                 <li><span data-i18n="country">Quốc Gia</span> <i class="fa-solid fa-angle-down"></i></li>
                 <li data-i18n="login">Đăng nhập</li>
                 <li><div class="language-selector">
                     <div class="current-lang" id="display-lang">Đang tải...</div>
                     <ul class="lang-dropdown">
-                        <li onclick="setLanguage('en')">English</li>
-                        <li onclick="setLanguage('ko')">Tiếng Hàn</li>
-                        <li onclick="setLanguage('ja')">Tiếng Nhật</li>
-                        <li onclick="setLanguage('zh')">Tiếng Trung</li>
-                        <li onclick="setLanguage('vi')">Tiếng Việt</li>
+                        <li onclick="setLanguage('en')" data-i18n="langEnglish">English</li>
+                        <li onclick="setLanguage('ko')" data-i18n="langKorean">Tiếng Hàn</li>
+                        <li onclick="setLanguage('ja')" data-i18n="langJapanese">Tiếng Nhật</li>
+                        <li onclick="setLanguage('zh')" data-i18n="langChinese">Tiếng Trung</li>
+                        <li onclick="setLanguage('vi')" data-i18n="langVietnamese">Tiếng Việt</li>
                     </ul>
                     </div>
                 </li>
@@ -48,19 +57,5 @@
     </section>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-    
-    <div id="google_translate_element" style="display:none;"></div>
-    
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'vi',
-                includedLanguages: 'en,ko,ja,zh-CN,vi',
-                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL, // Thử đổi sang HORIZONTAL
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-    </script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

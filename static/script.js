@@ -1,49 +1,4 @@
-﻿function getRec() {
-    let movie = document.getElementById("movie").value;
-
-    fetch(`/recommend?movie=${encodeURIComponent(movie)}`)
-        .then(res => res.json())
-        .then(data => {
-
-            let container = document.getElementById("result");
-            container.innerHTML = "";
-
-            let genreBox = document.getElementById("genres");
-
-            if (!data.recommendations || data.recommendations.length === 0) {
-                genreBox.innerText = "";
-                container.innerHTML = "<p>Không tìm thấy phim hoặc không có gợi ý</p>";
-                return;
-            }
-
-            // Hiển thị thể loại
-            genreBox.innerText = "Thể loại: " + data.genres.join(", ");
-
-            // Hiển thị phim
-            data.recommendations.forEach(item => {
-                let card = document.createElement("div");
-                card.className = "movie-card";
-
-                card.innerHTML = `
-                    <div class="poster-placeholder">🎬</div>
-                    <h3>${item}</h3>
-                    <button class="btn">XEM NGAY</button>
-                `;
-
-                container.appendChild(card);
-            });
-        })
-        .catch(err => console.error(err));
-}
-
-document.getElementById("movie").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        getRec();
-    }
-});
-
-const translations = {
+﻿const translations = {
     vi: {
         currentLang: 'Tiếng Việt',
         pageTitle: 'Retro Movie Hub',
@@ -57,7 +12,12 @@ const translations = {
         login: 'Đăng nhập',
         noRecommendations: 'Không tìm thấy phim hoặc không có gợi ý',
         watchNow: 'XEM NGAY',
-        genresPrefix: 'Thể loại: '
+        genresPrefix: 'Thể loại: ',
+        langEnglish: 'English',
+        langKorean: 'Tiếng Hàn',
+        langJapanese: 'Tiếng Nhật',
+        langChinese: 'Tiếng Trung',
+        langVietnamese: 'Tiếng Việt'
     },
     en: {
         currentLang: 'English',
@@ -72,7 +32,12 @@ const translations = {
         login: 'Login',
         noRecommendations: 'No movie found or no recommendations',
         watchNow: 'WATCH NOW',
-        genresPrefix: 'Genres: '
+        genresPrefix: 'Genres: ',
+        langEnglish: 'English',
+        langKorean: 'Korean',
+        langJapanese: 'Japanese',
+        langChinese: 'Chinese',
+        langVietnamese: 'Vietnamese'
     },
     ko: {
         currentLang: 'Tiếng Hàn',
@@ -87,7 +52,12 @@ const translations = {
         login: '로그인',
         noRecommendations: '영화를 찾을 수 없거나 추천이 없습니다',
         watchNow: '지금 보기',
-        genresPrefix: '장르: '
+        genresPrefix: '장르: ',
+        langEnglish: '영어',
+        langKorean: '한국어',
+        langJapanese: '일본어',
+        langChinese: '중국어',
+        langVietnamese: '베트남어'
     },
     ja: {
         currentLang: 'Tiếng Nhật',
@@ -102,7 +72,12 @@ const translations = {
         login: 'ログイン',
         noRecommendations: '映画が見つからないか、おすすめがありません',
         watchNow: '今すぐ見る',
-        genresPrefix: 'ジャンル: '
+        genresPrefix: 'ジャンル: ',
+        langEnglish: '英語',
+        langKorean: '韓国語',
+        langJapanese: '日本語',
+        langChinese: '中国語',
+        langVietnamese: 'ベトナム語'
     },
     zh: {
         currentLang: 'Tiếng Trung',
@@ -117,7 +92,12 @@ const translations = {
         login: '登录',
         noRecommendations: '未找到电影或没有推荐',
         watchNow: '立即观看',
-        genresPrefix: '类型: '
+        genresPrefix: '类型: ',
+        langEnglish: '英文',
+        langKorean: '韩文',
+        langJapanese: '日文',
+        langChinese: '中文',
+        langVietnamese: '越南文'
     }
 };
 
@@ -151,6 +131,14 @@ function translatePage(langCode) {
     if (display) {
         display.innerText = strings.currentLang;
     }
+
+    // Dịch các mục trong dropdown ngôn ngữ
+    document.querySelectorAll('.lang-dropdown li').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (key && key in strings) {
+            element.innerText = strings[key];
+        }
+    });
 }
 
 function getRec() {
@@ -201,6 +189,40 @@ window.onload = function() {
     let savedLang = localStorage.getItem('preferredLang');
     let initialLang = savedLang || document.documentElement.lang || 'vi';
     setLanguage(initialLang);
+
+    // Thêm delay cho dropdown ngôn ngữ
+    const languageSelector = document.querySelector('.language-selector');
+    const langDropdown = document.querySelector('.lang-dropdown');
+    let hideTimeout;
+
+    if (languageSelector && langDropdown) {
+        languageSelector.addEventListener('mouseenter', function() {
+            clearTimeout(hideTimeout);
+            langDropdown.style.opacity = '1';
+            langDropdown.style.visibility = 'visible';
+            langDropdown.style.animation = 'slideDown 0.3s ease';
+        });
+
+        languageSelector.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                langDropdown.style.opacity = '0';
+                langDropdown.style.visibility = 'hidden';
+                langDropdown.style.animation = '';
+            }, 200); // 1 giây delay
+        });
+
+        langDropdown.addEventListener('mouseenter', function() {
+            clearTimeout(hideTimeout);
+        });
+
+        langDropdown.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                langDropdown.style.opacity = '0';
+                langDropdown.style.visibility = 'hidden';
+                langDropdown.style.animation = '';
+            }, 100); // 1 giây delay
+        });
+    }
 };
 
 function setLanguage(langCode) {
