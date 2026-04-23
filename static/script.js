@@ -154,6 +154,44 @@ function getRec() {
 
             let genreBox = document.getElementById('genres');
 
+            // Hiển thị phim đã tìm ở một container riêng, phía trên #result
+            const searchTitle = movie && movie.trim() ? movie.trim() : null;
+            let searchContainer = document.getElementById('search-result');
+            if (!searchContainer) {
+                searchContainer = document.createElement('div');
+                searchContainer.id = 'search-result';
+                // chèn trước container kết quả
+                container.parentNode.insertBefore(searchContainer, container);
+            }
+            // reset
+            searchContainer.innerHTML = '';
+
+            // Sử dụng dữ liệu `searched` trả về từ backend nếu có, để lấy poster thực
+            if (data.searched) {
+                let targetCard = document.createElement('div');
+                targetCard.className = 'movie-card target';
+
+                targetCard.innerHTML = `
+                    <div class="poster-placeholder"><img src="${data.searched.poster}" alt="${data.searched.title}" class="poster-img"></div>
+                    <h3>${data.searched.title}</h3>
+                    <button class="btn">${strings.watchNow}</button>
+                `;
+
+                searchContainer.appendChild(targetCard);
+            } else if (searchTitle) {
+                // fallback: nếu backend không trả searched, hiển thị tiêu đề nhập tay
+                let targetCard = document.createElement('div');
+                targetCard.className = 'movie-card target';
+
+                targetCard.innerHTML = `
+                    <div class="poster-placeholder">🎯</div>
+                    <h3>${searchTitle}</h3>
+                    <button class="btn">${strings.watchNow}</button>
+                `;
+
+                searchContainer.appendChild(targetCard);
+            }
+
             if (!data.recommendations || data.recommendations.length === 0) {
                 genreBox.innerText = '';
                 container.innerHTML = `<p>${strings.noRecommendations}</p>`;
@@ -162,13 +200,20 @@ function getRec() {
 
             genreBox.innerText = strings.genresPrefix + data.genres.join(', ');
 
+            // Sau đó hiển thị các gợi ý cùng thể loại trong #result
             data.recommendations.forEach(item => {
+                // item có thể là object {title, poster}
+                const title = item.title || item;
+                if (data.searched && title.toLowerCase() === data.searched.title.toLowerCase()) return;
+
                 let card = document.createElement('div');
                 card.className = 'movie-card';
 
+                const poster = item.poster || null;
+
                 card.innerHTML = `
-                    <div class="poster-placeholder">🎬</div>
-                    <h3>${item}</h3>
+                    <div class="poster-placeholder">${poster ? `<img src="${poster}" alt="${title}" class="poster-img">` : '🎬'}</div>
+                    <h3>${title}</h3>
                     <button class="btn">${strings.watchNow}</button>
                 `;
 

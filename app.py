@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 from model import recommend
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # đọc .env vào environment
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
 app = Flask(__name__)
 
