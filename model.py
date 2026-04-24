@@ -171,7 +171,7 @@ def recommend(movie_name, top_n=5):
         "recommendations": recommendations
     }
 
-/*---------------------------TOP-10-NEWEST-MOVIES---------------------------*/
+#---------------------------TOP-10-NEWEST-MOVIES---------------------------
 df = pd.read_csv(movie_data, sep="|", names=columns, encoding="latin-1")
 df["year"] = df["title"].str.extract(r"\((\d{4})\)").astype(float)
 
