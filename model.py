@@ -8,7 +8,7 @@ movie_data = "C:/Users/quanm/project01/ml-100k/ml-100k/u.item"
 genre_movie = "C:/Users/quanm/project01/ml-100k/ml-100k/u.genre"
 
 genre_df = pd.read_csv(genre_movie, sep="|", header=None)
-genre_df = genre_df.dropna()  # bỏ dòng rỗng cuối
+genre_df = genre_df.dropna()
 genre_map = dict(zip(genre_df[1], genre_df[0]))
 
 columns = ["movieId", "title", "release_date", "video_release_date", "IMDb_URL"] + list(genre_map.values())
