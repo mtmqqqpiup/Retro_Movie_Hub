@@ -17,7 +17,8 @@
         langKorean: 'Tiếng Hàn',
         langJapanese: 'Tiếng Nhật',
         langChinese: 'Tiếng Trung',
-        langVietnamese: 'Tiếng Việt'
+        langVietnamese: 'Tiếng Việt',
+        NewestMovies: 'Phim mới nhất'
     },
     en: {
         currentLang: 'English',
@@ -37,7 +38,8 @@
         langKorean: 'Korean',
         langJapanese: 'Japanese',
         langChinese: 'Chinese',
-        langVietnamese: 'Vietnamese'
+        langVietnamese: 'Vietnamese',
+        NewestMovies: 'Newest Movies'
     },
     ko: {
         currentLang: 'Tiếng Hàn',
@@ -57,7 +59,8 @@
         langKorean: '한국어',
         langJapanese: '일본어',
         langChinese: '중국어',
-        langVietnamese: '베트남어'
+        langVietnamese: '베트남어',
+        NewestMovies: '최신 영화'
     },
     ja: {
         currentLang: 'Tiếng Nhật',
@@ -77,7 +80,8 @@
         langKorean: '韓国語',
         langJapanese: '日本語',
         langChinese: '中国語',
-        langVietnamese: 'ベトナム語'
+        langVietnamese: 'ベトナム語',
+        NewestMovies: '최신 영화'
     },
     zh: {
         currentLang: 'Tiếng Trung',
@@ -97,7 +101,8 @@
         langKorean: '韩文',
         langJapanese: '日文',
         langChinese: '中文',
-        langVietnamese: '越南文'
+        langVietnamese: '越南文',
+        NewestMovies: '最新电影'
     }
 };
 
@@ -140,6 +145,8 @@ function translatePage(langCode) {
     });
 }
 
+/*----------------------------RECOMMENDATION----------------------------*/
+
 function getRec() {
     let movie = document.getElementById('movie').value;
     let currentLang = localStorage.getItem('preferredLang') || document.documentElement.lang || 'vi';
@@ -153,19 +160,18 @@ function getRec() {
 
             let genreBox = document.getElementById('genres');
 
-            // Hiển thị phim đã tìm ở một container riêng, phía trên #result
+
             const searchTitle = movie && movie.trim() ? movie.trim() : null;
             let searchContainer = document.getElementById('search-result');
             if (!searchContainer) {
                 searchContainer = document.createElement('div');
                 searchContainer.id = 'search-result';
-                // chèn trước container kết quả
+              
                 container.parentNode.insertBefore(searchContainer, container);
             }
             // reset
             searchContainer.innerHTML = '';
 
-            // Sử dụng dữ liệu `searched` trả về từ backend nếu có, để lấy poster thực
             if (data.searched) {
                 let targetCard = document.createElement('div');
                 targetCard.className = 'movie-card target';
@@ -178,7 +184,6 @@ function getRec() {
 
                 searchContainer.appendChild(targetCard);
             } else if (searchTitle) {
-                // fallback: nếu backend không trả searched, hiển thị tiêu đề nhập tay
                 let targetCard = document.createElement('div');
                 targetCard.className = 'movie-card target';
 
@@ -199,9 +204,7 @@ function getRec() {
 
             genreBox.innerText = strings.genresPrefix + data.genres.join(', ');
 
-            // Sau đó hiển thị các gợi ý cùng thể loại trong #result
             data.recommendations.forEach(item => {
-                // item có thể là object {title, poster}
                 const title = item.title || item;
                 if (data.searched && title.toLowerCase() === data.searched.title.toLowerCase()) return;
 
@@ -228,6 +231,8 @@ document.getElementById('movie').addEventListener('keypress', function(event) {
         getRec();
     }
 });
+
+/*----------------------------HEADER SELECTION----------------------------*/
 
 window.onload = function() {
     let savedLang = localStorage.getItem('preferredLang');
@@ -310,7 +315,6 @@ function setLanguage(langCode) {
 let movies = [];
 let loaded = false;
 
-// ===== CREATE CARD =====
 function createMovieCard(movie) {
     const div = document.createElement("div");
     div.className = "movie-card";
@@ -319,11 +323,10 @@ function createMovieCard(movie) {
         <div class="movie-img"></div>
         <div class="movie-info">
             <div class="movie-title">${movie.title}</div>
-            <button class="watch-btn">XEM PHIM</button>
+            <button class="watch-btn" data-i18n="watchNow">XEM PHIM</button>
         </div>
     `;
 
-    // trigger animation
     setTimeout(() => {
         div.classList.add("slide-in");
     }, 50);
@@ -331,7 +334,6 @@ function createMovieCard(movie) {
     return div;
 }
 
-// ===== RENDER =====
 function renderFirst5() {
     const container = document.getElementById("movieContainer");
 
@@ -352,16 +354,13 @@ function renderNext5() {
     loaded = true;
 }
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("movieContainer");
 
-    // scroll ngang bằng chuột
     container.addEventListener("wheel", (e) => {
         e.preventDefault();
         container.scrollLeft += e.deltaY;
 
-        // 👇 khi scroll gần cuối → load thêm 5 phim
         if (
             container.scrollLeft + container.clientWidth >=
             container.scrollWidth - 50
@@ -370,7 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // fetch data
     fetch("/api/latest")
         .then(res => res.json())
         .then(data => {

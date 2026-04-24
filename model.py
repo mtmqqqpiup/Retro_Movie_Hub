@@ -71,7 +71,6 @@ def fetch_poster_from_tmdb(title, movie_id):
 
         return f"/static/image/posters/{poster_filename}"
     except Exception:
-        # on any failure, return None and let caller fallback
         return None
 
 def get_top_10_latest_movies():
@@ -127,10 +126,8 @@ def recommend(movie_name, top_n=5):
 
     idx = matches.index[0]
 
-
     target_genres = movies.loc[idx, genre_cols]
 
-    
     movies['match_count'] = movies[genre_cols].apply(
         lambda x: sum((x == 1) & (target_genres == 1)),
         axis=1
@@ -150,12 +147,10 @@ def recommend(movie_name, top_n=5):
             if os.path.exists(poster_path):
                 return f"/static/image/posters/{poster_filename}"
 
-        # Try to fetch from TMDb (will save as <movieId>.jpg on success)
         tmdb_url = fetch_poster_from_tmdb(row['title'], movie_id)
         if tmdb_url:
             return tmdb_url
 
-        # Fallback
         return '/static/image/logo.png'
 
     searched = {
@@ -176,9 +171,9 @@ def recommend(movie_name, top_n=5):
         "recommendations": recommendations
     }
 
+/*---------------------------TOP-10-NEWEST-MOVIES---------------------------*/
 df = pd.read_csv(movie_data, sep="|", names=columns, encoding="latin-1")
 df["year"] = df["title"].str.extract(r"\((\d{4})\)").astype(float)
-
 
 def get_latest_movies(n=10):
     latest = df.sort_values("year", ascending=False).head(n)
