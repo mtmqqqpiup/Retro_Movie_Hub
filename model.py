@@ -3,16 +3,17 @@ import pandas as pd
 import requests
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import datetime
 
+api_key = os.getenv('TMDB_API_KEY')
 movie_data = "C:/Users/quanm/project01/ml-100k/ml-100k/u.item"
 genre_movie = "C:/Users/quanm/project01/ml-100k/ml-100k/u.genre"
-
 genre_df = pd.read_csv(genre_movie, sep="|", header=None)
 genre_df = genre_df.dropna()
 genre_map = dict(zip(genre_df[1], genre_df[0]))
+genre_cols = list(genre_map.values())
 
 columns = ["movieId", "title", "release_date", "video_release_date", "IMDb_URL"] + list(genre_map.values())
-
 movies = pd.read_csv(
     movie_data,
     sep="|",
@@ -20,9 +21,7 @@ movies = pd.read_csv(
     header=None,
     names=columns
 )
-
-genre_cols = list(genre_map.values())
-
+movies['movieId'] = movies['movieId'].astype(int)
 movies['genres'] = movies[genre_cols].apply(
     lambda x: ' '.join([genre for genre in genre_cols if x[genre] == 1]),
     axis=1
@@ -30,18 +29,18 @@ movies['genres'] = movies[genre_cols].apply(
 
 cv = CountVectorizer()
 matrix = cv.fit_transform(movies['genres'])
-
 similarity = cosine_similarity(matrix)
+df = pd.read_csv(movie_data, sep="|", names=columns, encoding="latin-1")
+df["year"] = df["title"].str.extract(r"\((\d{4})\)").astype(float)
 
-def fetch_poster_from_tmdb(title, movie_id):
-    api_key = os.getenv('TMDB_API_KEY')
-    poster_dir = os.path.join(os.path.dirname(__file__), 'static', 'image', 'posters')
+def fetch_poster_from_tmdb(title, movieId):
+    poster_dir = r"C:/Users/quanm/RetroHubMovies/posters"
     os.makedirs(poster_dir, exist_ok=True)
-    poster_filename = f"{movie_id}.jpg"
+    poster_filename = f"{movieId}.jpg"
     poster_path = os.path.join(poster_dir, poster_filename)
 
     if os.path.exists(poster_path):
-        return f"/static/image/posters/{poster_filename}"
+        return f"/new_posters/{poster_filename}"
 
     if not api_key:
         return None
@@ -69,13 +68,26 @@ def fetch_poster_from_tmdb(title, movie_id):
         with open(poster_path, 'wb') as f:
             f.write(img_resp.content)
 
-        return f"/static/image/posters/{poster_filename}"
+        return f"/new_posters/{poster_filename}"
     except Exception:
         return None
 
-def get_top_10_latest_movies():
-    import datetime
-    
+def _poster_url_for_movie(row):
+        movie_id = row['movieId']
+        poster_dir = r"C:/Users/quanm/RetroHubMovies/posters"
+        
+        for ext in ('jpg', 'png', 'svg'):
+            poster_filename = f"{movie_id}.{ext}"
+            poster_path = os.path.join(poster_dir, poster_filename)
+            if os.path.exists(poster_path):
+                return f"/new_posters/{poster_filename}"
+
+        tmdb_url = fetch_poster_from_tmdb(row['title'], movie_id)
+        if tmdb_url:
+            return tmdb_url
+        return '/static/image/logo.png'
+
+def get_top_10_latest_movies(movies):
     def extract_year(date_str):
         try:
             if pd.isna(date_str) or date_str == '':
@@ -86,24 +98,7 @@ def get_top_10_latest_movies():
             return 0
     
     movies['year'] = movies['release_date'].apply(extract_year)
-    
     top_10 = movies[movies['year'] > 0].sort_values(by='year', ascending=False).head(10)
-    
-    def _poster_url_for_movie(row):
-        movie_id = row['movieId']
-        poster_dir = os.path.join(os.path.dirname(__file__), 'static', 'image', 'posters')
-        # check common extensions in order
-        for ext in ('jpg', 'png', 'svg'):
-            poster_filename = f"{movie_id}.{ext}"
-            poster_path = os.path.join(poster_dir, poster_filename)
-            if os.path.exists(poster_path):
-                return f"/static/image/posters/{poster_filename}"
-
-        tmdb_url = fetch_poster_from_tmdb(row['title'], movie_id)
-        if tmdb_url:
-            return tmdb_url
-
-        return '/static/image/logo.png'
     
     result = []
     for _, row in top_10.iterrows():
@@ -118,40 +113,19 @@ def get_top_10_latest_movies():
 
 def recommend(movie_name, top_n=5):
     movie_name = movie_name.strip().lower()
-
     matches = movies[movies['title'].str.lower().str.contains(movie_name, na=False)]
 
     if matches.empty:
         return {"genres": [], "recommendations": [], "searched": None}
 
     idx = matches.index[0]
-
     target_genres = movies.loc[idx, genre_cols]
-
     movies['match_count'] = movies[genre_cols].apply(
         lambda x: sum((x == 1) & (target_genres == 1)),
         axis=1
     )
-
     recs = movies[(movies['match_count'] >= 2) & (movies.index != idx)]
-
     recs = recs.sort_values(by='match_count', ascending=False).head(top_n)
-
-    def _poster_url_for_movie(row):
-        movie_id = row['movieId']
-        poster_dir = os.path.join(os.path.dirname(__file__), 'static', 'image', 'posters')
-        # check common extensions in order
-        for ext in ('jpg', 'png', 'svg'):
-            poster_filename = f"{movie_id}.{ext}"
-            poster_path = os.path.join(poster_dir, poster_filename)
-            if os.path.exists(poster_path):
-                return f"/static/image/posters/{poster_filename}"
-
-        tmdb_url = fetch_poster_from_tmdb(row['title'], movie_id)
-        if tmdb_url:
-            return tmdb_url
-
-        return '/static/image/logo.png'
 
     searched = {
         'title': movies.loc[idx, 'title'],
@@ -170,11 +144,3 @@ def recommend(movie_name, top_n=5):
         "searched": searched,
         "recommendations": recommendations
     }
-
-#---------------------------TOP-10-NEWEST-MOVIES---------------------------
-df = pd.read_csv(movie_data, sep="|", names=columns, encoding="latin-1")
-df["year"] = df["title"].str.extract(r"\((\d{4})\)").astype(float)
-
-def get_latest_movies(n=10):
-    latest = df.sort_values("year", ascending=False).head(n)
-    return latest[["movieId", "title", "year"]].to_dict(orient="records")

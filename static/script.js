@@ -25,10 +25,10 @@
         pageTitle: 'Retro Movie Hub',
         headerLogoAlt: 'Retro Movie Hub Logo',
         searchPlaceholder: 'Enter movie name...',
-        movieTheater: 'Now Showing',
+        movieTheater: 'Theatrical Movie',
         series: 'Series',
         movieSingle: 'Movie',
-        genre: 'Genre',
+        genre: 'Category',
         country: 'Country',
         login: 'Login',
         noRecommendations: 'No movie found or no recommendations',
@@ -145,93 +145,6 @@ function translatePage(langCode) {
     });
 }
 
-/*----------------------------RECOMMENDATION----------------------------*/
-
-function getRec() {
-    let movie = document.getElementById('movie').value;
-    let currentLang = localStorage.getItem('preferredLang') || document.documentElement.lang || 'vi';
-    let strings = translations[currentLang] || translations.vi;
-
-    fetch(`/recommend?movie=${encodeURIComponent(movie)}`)
-        .then(res => res.json())
-        .then(data => {
-            let container = document.getElementById('result');
-            container.innerHTML = '';
-
-            let genreBox = document.getElementById('genres');
-
-
-            const searchTitle = movie && movie.trim() ? movie.trim() : null;
-            let searchContainer = document.getElementById('search-result');
-            if (!searchContainer) {
-                searchContainer = document.createElement('div');
-                searchContainer.id = 'search-result';
-              
-                container.parentNode.insertBefore(searchContainer, container);
-            }
-            // reset
-            searchContainer.innerHTML = '';
-
-            if (data.searched) {
-                let targetCard = document.createElement('div');
-                targetCard.className = 'movie-card target';
-
-                targetCard.innerHTML = `
-                    <div class="poster-placeholder"><img src="${data.searched.poster}" alt="${data.searched.title}" class="poster-img"></div>
-                    <h3>${data.searched.title}</h3>
-                    <button class="btn">${strings.watchNow}</button>
-                `;
-
-                searchContainer.appendChild(targetCard);
-            } else if (searchTitle) {
-                let targetCard = document.createElement('div');
-                targetCard.className = 'movie-card target';
-
-                targetCard.innerHTML = `
-                    <div class="poster-placeholder">🎯</div>
-                    <h3>${searchTitle}</h3>
-                    <button class="btn">${strings.watchNow}</button>
-                `;
-
-                searchContainer.appendChild(targetCard);
-            }
-
-            if (!data.recommendations || data.recommendations.length === 0) {
-                genreBox.innerText = '';
-                container.innerHTML = `<p>${strings.noRecommendations}</p>`;
-                return;
-            }
-
-            genreBox.innerText = strings.genresPrefix + data.genres.join(', ');
-
-            data.recommendations.forEach(item => {
-                const title = item.title || item;
-                if (data.searched && title.toLowerCase() === data.searched.title.toLowerCase()) return;
-
-                let card = document.createElement('div');
-                card.className = 'movie-card';
-
-                const poster = item.poster || null;
-
-                card.innerHTML = `
-                    <div class="poster-placeholder">${poster ? `<img src="${poster}" alt="${title}" class="poster-img">` : '🎬'}</div>
-                    <h3>${title}</h3>
-                    <button class="btn">${strings.watchNow}</button>
-                `;
-
-                container.appendChild(card);
-            });
-        })
-        .catch(err => console.error(err));
-}
-
-document.getElementById('movie').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        getRec();
-    }
-});
-
 /*----------------------------HEADER SELECTION----------------------------*/
 
 window.onload = function() {
@@ -311,19 +224,104 @@ function setLanguage(langCode) {
     localStorage.setItem('preferredLang', normalizedLang);
 }
 
-/*----------------------------TOP-10-MOVIES--------------------------------------- */
+/*-------------------------------MOVIES-RECOMMENDED-------------------------------*/
+function getRec() {
+    let movie = document.getElementById('movie').value;
+    let currentLang = localStorage.getItem('preferredLang') || document.documentElement.lang || 'vi';
+    let strings = translations[currentLang] || translations.vi;
+
+    fetch(`/recommend?movie=${encodeURIComponent(movie)}`)
+        .then(res => res.json())
+        .then(data => {
+            let container = document.getElementById('result');
+            container.innerHTML = '';
+
+            document.getElementById('resultSection').style.display = 'block';
+            let genreBox = document.getElementById('genres');
+
+            const searchTitle = movie && movie.trim() ? movie.trim() : null;
+            let searchContainer = document.getElementById('search-result');
+            if (!searchContainer) {
+                searchContainer = document.createElement('div');
+                searchContainer.id = 'search-result';
+              
+                container.parentNode.insertBefore(searchContainer, container);
+            }
+        
+            searchContainer.innerHTML = '';
+
+            if (data.searched) {
+                let targetCard = document.createElement('div');
+                targetCard.className = 'movie-card target';
+
+                targetCard.innerHTML = `
+                    <div class="poster-placeholder"><img src="${data.searched.poster}" alt="${data.searched.title}" class="poster-img"></div>
+                    <h3>${data.searched.title}</h3>
+                    <button class="btn">${strings.watchNow}</button>
+                `;
+
+                searchContainer.appendChild(targetCard);
+            } else if (searchTitle) {
+                let targetCard = document.createElement('div');
+                targetCard.className = 'movie-card target';
+
+                targetCard.innerHTML = `
+                    <div class="poster-placeholder">🎯</div>
+                    <h3>${searchTitle}</h3>
+                    <button class="btn">${strings.watchNow}</button>
+                `;
+
+                searchContainer.appendChild(targetCard);
+            }
+
+            if (!data.recommendations || data.recommendations.length === 0) {
+                genreBox.innerText = '';
+                container.innerHTML = `<p>${strings.noRecommendations}</p>`;
+                return;
+            }
+
+            genreBox.innerText = strings.genresPrefix + data.genres.join(', ');
+
+            data.recommendations.forEach(item => {
+                const title = item.title || item;
+                if (data.searched && title.toLowerCase() === data.searched.title.toLowerCase()) return;
+
+                let card = document.createElement('div');
+                card.className = 'movie-card';
+                const poster = item.poster || null;
+
+                card.innerHTML = `
+                    <div class="poster-placeholder">${poster ? `<img src="${poster}" alt="${title}" class="poster-img">` : '🎬'}</div>
+                    <h3>${title}</h3>
+                    <button class="btn">${strings.watchNow}</button>
+                `;
+
+                container.appendChild(card);
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+document.getElementById('movie').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        getRec();
+    }
+});
+
+/*--------------------------------10 BỘ PHIM MỚI NHẤT--------------------------------------- */
 let movies = [];
 let loaded = false;
 
 function createMovieCard(movie) {
     const div = document.createElement("div");
-    div.className = "movie-card";
+    div.className = "movie-card top10";
 
     div.innerHTML = `
-        <div class="movie-img"></div>
+        <img class="poster-placeholder" src="${movie.poster}" alt="${movie.title}">
         <div class="movie-info">
             <div class="movie-title">${movie.title}</div>
-            <button class="watch-btn" data-i18n="watchNow">XEM PHIM</button>
+            <button class="btn" data-i18n="watchNow">XEM NGAY</button>
         </div>
     `;
 
